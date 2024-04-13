@@ -46,6 +46,7 @@ class Bugs(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     severity = db.Column(db.String(200))
+    closed = db.Column(db.Boolean, default=False)
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
     description = db.Column(db.Text)
     #author = db.Column(db.Integer, db.ForeignKey('users.id'))
@@ -165,14 +166,47 @@ def bugs_add():
         db.session.commit()
 
         flash("Bug Submitted Successfully")
+        return redirect(url_for('bug', id=bug.id))
 
     return render_template("bugs_add.html", form=form)
 
 @app.route("/bugs")
-@login_required
 def bugs():
     bugs = Bugs.query.order_by(Bugs.date_added)
     return render_template("bugs.html", bugs=bugs)
+
+@app.route("/bugs/<int:id>")
+def bug(id):
+    bug = Bugs.query.get_or_404(id)
+    return render_template('bug.html', bug=bug)
+
+@app.route("/bugs/close/<int:id>")
+@login_required
+def bugs_close(id):
+    bug = Bugs.query.get_or_404(id)
+    bug.closed = True
+    db.session.add(bug)
+    db.session.commit()
+    return redirect(url_for('bug', id=bug.id))
+
+@app.route("/bugs/edit/<int:id>", methods=['GET','POST'])
+@login_required
+def bugs_edit(id):
+    bug = Bugs.query.get_or_404(id)
+    form = BugForm()
+    if form.validate_on_submit():
+        bug.title = form.title.data
+        bug.author = form.author.data
+        bug.description = form.description.data
+
+        db.session.add(bug)
+        db.session.commit()
+        flash("bug has been updated")
+        return redirect(url_for('bug', id=bug.id))
+    form.title.data = bug.title
+    form.author.data = bug.author
+    form.description.data = bug.description
+    return render_template("bugs_edit.html", bug=bug, form=form)
 
 @app.errorhandler(404)
 def page_not_found(e):

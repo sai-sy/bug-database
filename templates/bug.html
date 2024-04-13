@@ -13,21 +13,12 @@ get_flashed_messages() %}
 
 {% endfor %}
 
-<h1>Bugs....</h1>
 <br />
-
-{% for bug in bugs %}
 <div class="shadow p-3 mb-5 bg-body-tertiary rounded">
-  <h2>{{ bug.title }}</h2>
+  <h1>{{ bug.title }}</h1>
   <br />
-  By: {{ bug.author }} <br />
-  Closed: {{ bug.closed }} <br />
-  {{ bug.date_added }} <br />
-  {{ bug.description }} <br /><br />
-
-  <a href="{{ url_for('bug', id=bug.id)}}" class="btn btn-outline-primary"
-    >View Bug</a
-  >
+  By: {{ bug.author }} | Closed: {{ bug.closed }} | {{ bug.date_added }}
+  <br /><br />
   {% if current_user.is_authenticated %}
   <a
     href="{{ url_for('bugs_edit', id=bug.id)}}"
@@ -37,6 +28,7 @@ get_flashed_messages() %}
   <a href="{{ url_for('bugs_close', id=bug.id)}}" class="btn btn-outline-danger"
     >Close Bug</a
   >
-  {% endif %}
+  {% endif %} <br /><br />{{ bug.description }} <br /><br />
 </div>
-{% endfor %} {% endblock %}
+
+{% endblock %}
